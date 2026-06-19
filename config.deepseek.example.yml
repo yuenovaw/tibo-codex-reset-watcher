@@ -1,0 +1,21 @@
+classifier:
+  mode: hybrid
+
+llm:
+  provider: deepseek
+  model: deepseek-v4-flash
+  api_key_env: DEEPSEEK_API_KEY
+  # base_url defaults to https://api.deepseek.com/v1
+  use_response_format: auto
+  temperature: 0
+  timeout_seconds: 45
+  max_retries: 2
+
+notify:
+  channels:
+    - console
+  min_level: medium
+  timezone: Asia/Shanghai
+
+storage:
+  sqlite_path: watcher.sqlite3

@@ -1,0 +1,37 @@
+[project]
+name = "tibo-codex-reset-watcher"
+version = "0.1.0"
+description = "Watch public signals for Tibo-style Codex rate-limit reset hints and announcements."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+  { name = "Tibo Codex Reset Watcher contributors" }
+]
+dependencies = [
+  "httpx>=0.27",
+  "pydantic>=2.7",
+  "python-dateutil>=2.9",
+  "pyyaml>=6.0",
+  "rich>=13.7",
+  "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+tibo-reset-watch = "tibo_codex_reset_watcher.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tibo_codex_reset_watcher"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,51 @@
+x:
+  bearer_token_env: X_BEARER_TOKEN
+  username: thsottiaux
+  query: 'from:thsottiaux (Codex OR tokens OR "rate limits" OR "usage limits" OR "paid plans" OR reset OR "you know what''s coming") -is:retweet'
+  max_results: 20
+
+github:
+  token_env: GITHUB_TOKEN
+  repo: openai/codex
+  query: '"rate limit" OR "usage limit" OR "reset credits"'
+  max_results: 20
+
+classifier:
+  mode: rules
+  candidate_score: 0.55
+  notify_score: 0.80
+
+llm:
+  provider: openai
+  model: gpt-4.1-mini
+  api_key_env: OPENAI_API_KEY
+  # base_url and use_response_format are filled from the provider preset.
+  # Override them for OpenAI-compatible gateways.
+  # base_url: https://api.openai.com/v1
+  # use_response_format: auto  # auto | always | never
+  temperature: 0
+  timeout_seconds: 45
+  max_retries: 2
+  extra_headers: {}
+  extra_body: {}
+
+notify:
+  channels:
+    - console
+  min_level: medium
+  timezone: Asia/Shanghai
+  jsonl_path: events.jsonl
+  telegram_bot_token_env: TELEGRAM_BOT_TOKEN
+  telegram_chat_id_env: TELEGRAM_CHAT_ID
+  discord_webhook_url_env: DISCORD_WEBHOOK_URL
+  email_smtp_host_env: EMAIL_SMTP_HOST
+  email_smtp_port_env: EMAIL_SMTP_PORT
+  email_username_env: EMAIL_USERNAME
+  email_password_env: EMAIL_PASSWORD
+  email_from_env: EMAIL_FROM
+  email_to_env: EMAIL_TO
+  email_use_tls_env: EMAIL_USE_TLS
+  email_use_ssl_env: EMAIL_USE_SSL
+
+storage:
+  sqlite_path: watcher.sqlite3

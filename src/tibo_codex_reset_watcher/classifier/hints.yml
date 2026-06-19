@@ -1,0 +1,70 @@
+context:
+  - codex
+  - codexer
+  - rate limits
+  - rate limit
+  - usage limits
+  - usage limit
+  - tokens
+  - paid plans
+  - all plans
+  - plus
+  - pro
+  - team
+  - edu
+
+explicit_reset:
+  - i have reset
+  - we have reset
+  - sneaky double reset
+  - double reset
+  - full reset
+  - reset usage limits
+  - reset rate limits
+  - reset the codex rate limits
+  - reset everyone's limits
+  - reset everyone’s limits
+
+scheduled_reset:
+  - give us 24 hours
+  - within 24 hours
+  - in 24 hours
+  - later today
+  - tomorrow
+
+implicit_strong:
+  - may the tokens flow again
+  - you know what's coming
+  - you know what’s coming
+  - what's coming
+  - what’s coming
+  - make up for the slowdowns
+
+implicit_medium:
+  - this was fixed
+  - was fixed
+  - fixed
+  - enjoy
+  - we are back
+  - reliability
+  - incident
+  - incidents
+  - degradation
+  - degraded
+
+feature_change:
+  - reset credits
+  - rate-limit reset credits
+  - ratelimitresetcredits
+  - reset bank
+  - account/ratelimits
+  - /usage
+  - /status
+
+rate_limit_change:
+  - increased usage limits
+  - higher rate limits
+  - more usage included
+  - up to 4x more usage
+  - 50% higher rate limits
+  - priority processing

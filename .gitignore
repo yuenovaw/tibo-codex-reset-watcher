@@ -1,0 +1,14 @@
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+watcher.sqlite3
+events.jsonl
+.env
+.DS_Store
+dist/
+build/
+*.egg-info/
