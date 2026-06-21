@@ -37,22 +37,43 @@ This tool turns those public signals into structured events.
 
 ## Install
 
-Use `uv` or a conda environment. For example:
+Recommended with `uv`:
 
 ```bash
-conda activate gen
+uv sync
+uv run tibo-reset-watch --help
+```
+
+Install the CLI into your current Python environment:
+
+```bash
 uv pip install .
+```
+
+Without `uv`, use a standard virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install .
 ```
 
 For development:
 
 ```bash
-conda activate gen
-uv pip install -e ".[dev]"
-uv run --extra dev pytest
+uv sync --extra dev
+uv run pytest
 ```
 
-You can also build and install the wheel:
+Conda also works if you prefer managing Python that way:
+
+```bash
+conda create -n tibo-reset-watch python=3.12
+conda activate tibo-reset-watch
+uv sync --extra dev
+```
+
+Build and install the wheel:
 
 ```bash
 uv build
@@ -305,7 +326,8 @@ export EMAIL_USE_SSL="true"
 ## Development
 
 ```bash
-uv run --extra dev pytest
+uv sync --extra dev
+uv run pytest
 ```
 
 If an editable development environment gets stale, reinstall the package:
