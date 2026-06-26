@@ -23,7 +23,6 @@ explicit_reset:
   - reset rate limits
   - reset the codex rate limits
   - reset everyone's limits
-  - reset everyone’s limits
 
 scheduled_reset:
   - give us 24 hours
@@ -35,9 +34,7 @@ scheduled_reset:
 implicit_strong:
   - may the tokens flow again
   - you know what's coming
-  - you know what’s coming
   - what's coming
-  - what’s coming
   - make up for the slowdowns
 
 implicit_medium:

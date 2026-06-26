@@ -16,6 +16,7 @@ class SQLiteStore:
         self.init()
 
     def init(self) -> None:
+        self.conn.execute("pragma journal_mode=wal")
         self.conn.executescript(
             """
             create table if not exists raw_items (

@@ -1,61 +1,51 @@
 # tibo-codex-reset-watcher
 
-A small public-signal watcher for detecting Tibo-style Codex rate-limit reset hints and announcements.
+A lightweight watcher that monitors public signals for OpenAI Codex rate-limit reset announcements, classifies them, and sends notifications through your preferred channels.
 
-It watches public sources, classifies explicit and implicit Codex reset signals, extracts likely effective reset times, stores events locally, and sends notifications.
+It watches X (Twitter) posts and GitHub commits, classifies explicit and implicit reset signals, extracts likely effective reset times, stores events locally, and delivers notifications.
 
-This project is not affiliated with OpenAI. It uses public signals only and provides best-effort detection.
+> **Disclaimer:** This project is not affiliated with OpenAI. It uses only publicly available signals and provides best-effort detection.
 
-## Why
+## How it works
 
-Codex reset announcements are sometimes direct:
+Codex reset announcements range from direct:
 
-```text
+```
 I have reset usage limits for Codex across all paid plans.
 ```
 
-Sometimes they are more hint-shaped:
+to hint-shaped:
 
-```text
+```
 This was fixed. You know what's coming 👀
-
 Give us 24 hours to reset the Codex rate limits across all plans.
 ```
 
-This tool turns those public signals into structured events.
+The watcher turns those public signals into structured, deduplicated events.
 
 ## Features
 
-- Local rule classifier by default, no LLM required.
-- Explicit reset, scheduled reset, implicit reset, and weak-hint detection.
-- Effective-time extraction for phrases like `give us 24 hours`.
-- SQLite storage and de-duplication.
-- Console and JSONL notifications.
-- Optional Telegram and Discord notifications.
-- Optional OpenAI-compatible LLM classifier with the user's own API key.
-- Optional GitHub source for `openai/codex` rate-limit feature changes.
+- **Rule-based classifier** — works locally with no API key or external dependency
+- **Signal types** — explicit reset, scheduled reset, implicit reset, weak hints, rate-limit changes, GitHub feature changes, and incident notices
+- **Effective-time extraction** — parses phrases like "give us 24 hours" into timestamps
+- **SQLite storage** with deduplication and notification tracking
+- **Notification channels** — console, JSONL, Telegram, Discord, email (SMTP)
+- **Optional LLM classifier** — uses any OpenAI-compatible API with your own key
+- **Hybrid mode** — rules screen candidates first, LLM only runs on plausible hits
 
 ## Install
 
-Recommended with `uv`:
+Requires Python 3.11+. Recommended with [`uv`](https://github.com/astral-sh/uv):
 
 ```bash
 uv sync
 uv run tibo-reset-watch --help
 ```
 
-Install the CLI into your current Python environment:
+Or install into your current Python environment:
 
 ```bash
-uv pip install .
-```
-
-Without `uv`, use a standard virtual environment:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install .
+pip install .
 ```
 
 For development:
@@ -65,85 +55,51 @@ uv sync --extra dev
 uv run pytest
 ```
 
-Conda also works if you prefer managing Python that way:
+## Quick start
 
-```bash
-conda create -n tibo-reset-watch python=3.12
-conda activate tibo-reset-watch
-uv sync --extra dev
-```
-
-Build and install the wheel:
-
-```bash
-uv build
-uv pip install dist/*.whl
-```
-
-## Quick Start
-
-Classify one text sample locally:
+**Classify a single text sample (no API key needed):**
 
 ```bash
 tibo-reset-watch classify-text "Give us 24 hours to reset the Codex rate limits across all plans."
 ```
 
-Classify one text sample with your configured LLM API:
+**Replay bundled fixture posts:**
 
 ```bash
-export OPENAI_API_KEY="..."
-tibo-reset-watch classify-text "Dearest gentle codexer. We did a sneaky double reset." --mode llm --config config.yml
+tibo-reset-watch replay examples/fixtures/tibo_posts.jsonl
 ```
 
-Check whether the configured LLM API is reachable:
-
-```bash
-tibo-reset-watch llm-check --config config.yml
-```
-
-Create a config file:
-
-```bash
-tibo-reset-watch init-config config.yml
-```
-
-Run one X API fetch:
+**Run a one-shot X API fetch:**
 
 ```bash
 export X_BEARER_TOKEN="..."
 tibo-reset-watch run-once --source x --config config.yml
 ```
 
-Run one GitHub commit search:
-
-```bash
-tibo-reset-watch run-once --source github --config config.yml
-```
-
-Replay local fixtures:
-
-```bash
-tibo-reset-watch replay examples/fixtures/tibo_posts.jsonl
-```
-
-Run continuously:
+**Run continuously:**
 
 ```bash
 tibo-reset-watch watch --source x --interval 600 --config config.yml
 ```
 
+**Create a starter config:**
+
+```bash
+tibo-reset-watch init-config config.yml
+```
+
 ## Configuration
 
-See [config.example.yml](config.example.yml).
-
-The default classifier mode is `rules`.
+Copy [`config.example.yml`](config.example.yml) and adjust as needed. The default classifier requires no external services:
 
 ```yaml
 classifier:
   mode: rules  # rules | hybrid | llm
 ```
 
-LLM classification is optional. If enabled, candidate text and metadata are sent to your configured API provider.
+### LLM classifier (optional)
+
+Any OpenAI-compatible provider works. Set `mode: hybrid` to run the LLM only on rule-screened candidates, reducing API calls:
 
 ```yaml
 classifier:
@@ -153,34 +109,24 @@ llm:
   provider: openai
   model: gpt-4.1-mini
   api_key_env: OPENAI_API_KEY
-  # base_url is filled by the provider preset.
 ```
 
-Provider presets:
+Built-in provider presets (set `base_url` automatically):
 
-```yaml
-# DeepSeek
-llm:
-  provider: deepseek
-  model: deepseek-v4-flash
-  api_key_env: DEEPSEEK_API_KEY
+| Provider | `provider` value |
+|---|---|
+| OpenAI | `openai` |
+| DeepSeek | `deepseek` |
+| OpenRouter | `openrouter` |
+| LiteLLM | `litellm` |
+| Ollama | `ollama` |
+| Any other OpenAI-compatible | `openai-compatible` + `base_url` |
 
-# OpenRouter
-llm:
-  provider: openrouter
-  model: deepseek/deepseek-chat-v3.1
-  api_key_env: OPENROUTER_API_KEY
-  extra_headers:
-    HTTP-Referer: https://github.com/yourname/tibo-codex-reset-watcher
-    X-Title: tibo-codex-reset-watcher
+Check your LLM configuration:
 
-# LiteLLM or other gateway
-llm:
-  provider: openai-compatible
-  model: your-model
-  api_key_env: LITELLM_API_KEY
-  base_url: http://localhost:4000/v1
-  use_response_format: never
+```bash
+export OPENAI_API_KEY="..."
+tibo-reset-watch llm-check --config config.yml
 ```
 
 Advanced LLM options:
@@ -195,55 +141,18 @@ llm:
   extra_body: {}
 ```
 
-Check your LLM configuration:
+### Notification channels
 
-```bash
-export OPENAI_API_KEY="..."
-tibo-reset-watch llm-check --config config.yml
-```
-
-Classify one sample with the LLM:
-
-```bash
-tibo-reset-watch classify-text \
-  "Dearest gentle codexer. We did a sneaky double reset." \
-  --mode llm \
-  --config config.yml \
-  --json
-```
-
-Use `hybrid` to let local rules screen candidates before calling the LLM:
-
-```bash
-tibo-reset-watch run-once --source x --config config.yml
-```
-
-```yaml
-classifier:
-  mode: hybrid
-```
-
-The LLM adapter uses the OpenAI-compatible Chat Completions endpoint:
-
-```text
-POST {base_url}/chat/completions
-Authorization: Bearer $OPENAI_API_KEY
-```
-
-If a compatible provider does not support JSON response mode, the adapter retries without `response_format`.
-
-## Notification Channels
-
-Console is the safest default:
+**Console (default):**
 
 ```yaml
 notify:
   channels:
     - console
-  min_level: medium
+  min_level: medium  # low | medium | high
 ```
 
-JSONL:
+**JSONL file:**
 
 ```yaml
 notify:
@@ -253,7 +162,7 @@ notify:
   jsonl_path: events.jsonl
 ```
 
-Telegram:
+**Telegram:**
 
 ```bash
 export TELEGRAM_BOT_TOKEN="..."
@@ -266,7 +175,7 @@ notify:
     - telegram
 ```
 
-Discord:
+**Discord:**
 
 ```bash
 export DISCORD_WEBHOOK_URL="..."
@@ -278,17 +187,15 @@ notify:
     - discord
 ```
 
-Email via SMTP:
+**Email (SMTP):**
 
 ```bash
 export EMAIL_SMTP_HOST="smtp.example.com"
 export EMAIL_SMTP_PORT="587"
-export EMAIL_USERNAME="your@email.com"
-export EMAIL_PASSWORD="your_app_password"
-export EMAIL_FROM="your@email.com"
-export EMAIL_TO="destination@email.com"
+export EMAIL_USERNAME="you@example.com"
+export EMAIL_PASSWORD="..."
+export EMAIL_TO="destination@example.com"
 export EMAIL_USE_TLS="true"
-export EMAIL_USE_SSL="false"
 ```
 
 ```yaml
@@ -297,31 +204,18 @@ notify:
     - email
 ```
 
-For SMTP-over-SSL, commonly port `465`, use:
+## Event types
 
-```bash
-export EMAIL_USE_TLS="false"
-export EMAIL_USE_SSL="true"
-```
-
-## Event Types
-
-- `explicit_reset`: direct reset announcement.
-- `scheduled_reset`: reset announced for a future window.
-- `implicit_reset`: strong hint that reset is coming or happened.
-- `weak_hint`: plausible but low-confidence hint.
-- `rate_limit_change`: public source says limits or included usage changed.
-- `rate_limit_feature_change`: GitHub signal about limit/reset mechanics.
-- `incident_notice`: reliability or incident context.
-- `unrelated`: no useful signal.
-
-## Roadmap
-
-- RSS/Atom output.
-- GitHub Actions scheduled watcher example.
-- Multi-account watchlist.
-- More fixtures for Tibo-style phrasing.
-- Small public dashboard.
+| Type | Description |
+|---|---|
+| `explicit_reset` | Direct announcement that limits were reset |
+| `scheduled_reset` | Reset announced for a future window |
+| `implicit_reset` | Strong hint that a reset occurred or is coming |
+| `weak_hint` | Plausible but low-confidence signal |
+| `rate_limit_change` | Limits or included usage changed (not a reset) |
+| `rate_limit_feature_change` | GitHub signal about limit/reset mechanics |
+| `incident_notice` | Reliability or incident context |
+| `unrelated` | No useful signal |
 
 ## Development
 
@@ -330,8 +224,6 @@ uv sync --extra dev
 uv run pytest
 ```
 
-If an editable development environment gets stale, reinstall the package:
+## License
 
-```bash
-uv pip install -e ".[dev]" --reinstall
-```
+[MIT](LICENSE)

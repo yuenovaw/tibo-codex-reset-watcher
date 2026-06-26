@@ -7,7 +7,7 @@ from rich.console import Console
 from tibo_codex_reset_watcher.classifier.llm import LLMClassifier
 from tibo_codex_reset_watcher.classifier.rules import RuleClassifier
 from tibo_codex_reset_watcher.config import AppConfig
-from tibo_codex_reset_watcher.models import RawItem, ResetEvent, Severity
+from tibo_codex_reset_watcher.models import EventType, RawItem, ResetEvent, Severity
 from tibo_codex_reset_watcher.notify import ConsoleNotifier, DiscordNotifier, EmailNotifier, JsonlNotifier, TelegramNotifier
 from tibo_codex_reset_watcher.sources import GitHubSource, XApiSource
 from tibo_codex_reset_watcher.storage import SQLiteStore
@@ -58,7 +58,8 @@ class WatcherRunner:
         if mode == "hybrid" and rule_event.confidence >= self.config.classifier.candidate_score:
             try:
                 return await self.llm.classify(item, rule_event)
-            except Exception:
+            except Exception as exc:
+                console.print(f"[yellow]LLM classify failed, falling back to rules[/yellow] error={exc}")
                 return rule_event
         return rule_event
 
@@ -74,10 +75,13 @@ class WatcherRunner:
             new_items = 0
             stored = 0
             for item in raw_items:
-                if not dry_run and store.save_raw_item(item):
+                is_new = dry_run or store.save_raw_item(item)
+                if not dry_run and is_new:
                     new_items += 1
+                if not is_new:
+                    continue
                 event = await self.classify(item)
-                if event.event_type.value != "unrelated":
+                if event.event_type != EventType.UNRELATED:
                     if not dry_run and store.save_event(event):
                         stored += 1
                     events.append(event)

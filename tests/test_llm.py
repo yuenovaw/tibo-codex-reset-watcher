@@ -71,7 +71,7 @@ def test_parse_llm_json_accepts_fenced_json() -> None:
 
 def test_llm_provider_presets() -> None:
     deepseek = LLMConfig(provider="deepseek", model="deepseek-v4-flash", api_key_env="DEEPSEEK_API_KEY")
-    assert deepseek.base_url == "https://api.deepseek.com/v1"
+    assert deepseek.base_url == "https://api.deepseek.com"
     assert deepseek.use_response_format == "auto"
 
     ollama = LLMConfig(provider="ollama", model="qwen2.5:7b", api_key_env="OLLAMA_API_KEY")

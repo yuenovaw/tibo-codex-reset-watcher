@@ -109,7 +109,7 @@ PROVIDER_PRESETS: dict[str, dict[str, str]] = {
         "use_response_format": "always",
     },
     "deepseek": {
-        "base_url": "https://api.deepseek.com/v1",
+        "base_url": "https://api.deepseek.com",
         "use_response_format": "auto",
     },
     "openrouter": {
